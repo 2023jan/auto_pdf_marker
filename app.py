@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Auto-Bookmarker",
+    page_title="PDF自动书签生成器",
     page_icon="📚",
     layout="wide"
 )
@@ -45,10 +45,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # App title
-st.title("📚 PDF Auto-Bookmarker")
+st.title("📚 PDF自动书签生成器")
 st.markdown("""
-Automatically extract Table of Contents from PDF pages using Vision AI and embed bookmarks.
-**No OCR** – uses multimodal LLM to understand complex layouts (dual-column, tables, etc.).
+使用Vision AI自动从PDF页面提取目录并嵌入书签。
+**非OCR技术** – 使用多模态LLM理解复杂布局（双列、表格等）。
 """)
 
 # Load saved configuration
@@ -56,75 +56,75 @@ config = config_handler.load_config()
 default_config = config_handler.get_default_config()
 
 # Sidebar configuration
-st.sidebar.header("🔧 API Configuration")
+st.sidebar.header("🔧 API配置")
 
 # Configuration management buttons
 col1, col2 = st.sidebar.columns(2)
 with col1:
-    save_button = st.button("💾 Save Config", use_container_width=True)
+    save_button = st.button("💾 保存配置", use_container_width=True)
 with col2:
-    clear_button = st.button("🗑️ Clear Config", use_container_width=True)
+    clear_button = st.button("🗑️ 清除配置", use_container_width=True)
 
 # Handle configuration actions after all inputs are defined
 if clear_button:
     if config_handler.clear_config():
-        st.sidebar.success("Configuration cleared!")
+        st.sidebar.success("配置已清除!")
         st.rerun()
     else:
-        st.sidebar.error("Failed to clear configuration")
+        st.sidebar.error("清除配置失败")
 
 st.sidebar.markdown("---")
 
 # API Configuration inputs with loaded values
 base_url = st.sidebar.text_input(
-    "Base URL",
+    "API基础地址",
     value=config.get("base_url", default_config["base_url"]) if config else default_config["base_url"],
-    help="OpenAI-compatible API endpoint (e.g., https://api.deepseek.com, https://openrouter.ai/api/v1)"
+    help="OpenAI兼容的API端点 (例如 https://api.deepseek.com, https://openrouter.ai/api/v1)"
 )
 api_key = st.sidebar.text_input(
-    "API Key",
+    "API密钥",
     value=config.get("api_key", default_config["api_key"]) if config else default_config["api_key"],
     type="password",
-    help="Your API key for the chosen provider"
+    help="所选服务提供商的API密钥"
 )
 model = st.sidebar.text_input(
-    "Model Name",
+    "模型名称",
     value=config.get("model", default_config["model"]) if config else default_config["model"],
-    help="Vision-capable model (e.g., deepseek-vl, gpt-4o, gemini-flash)"
+    help="支持视觉功能的模型 (例如 deepseek-vl, gpt-4o, gemini-flash)"
 )
 
-st.sidebar.header("⚙️ Processing Settings")
+st.sidebar.header("⚙️ 处理设置")
 dpi = st.sidebar.slider(
-    "Image DPI",
+    "图像DPI",
     min_value=150,
     max_value=600,
     value=config.get("dpi", default_config["dpi"]) if config else default_config["dpi"],
     step=50,
-    help="Higher DPI improves text clarity but increases API payload size"
+    help="更高的DPI提高文本清晰度但增加API负载大小"
 )
 max_tokens = st.sidebar.number_input(
-    "Max Tokens",
+    "最大Token数",
     min_value=500,
     max_value=4000,
     value=config.get("max_tokens", default_config["max_tokens"]) if config else default_config["max_tokens"],
     step=500,
-    help="Maximum tokens for LLM response"
+    help="LLM响应的最大Token数"
 )
 temperature = st.sidebar.slider(
-    "Temperature",
+    "温度",
     min_value=0.0,
     max_value=1.0,
     value=config.get("temperature", default_config["temperature"]) if config else default_config["temperature"],
     step=0.05,
-    help="Lower temperature for more deterministic JSON output"
+    help="较低的温度产生更确定的JSON输出"
 )
 
 # Main content area
-st.header("📄 Step 1: Upload PDF")
+st.header("📄 步骤 1: 上传PDF文件")
 uploaded_file = st.file_uploader(
-    "Choose a PDF file",
+    "选择PDF文件",
     type=["pdf"],
-    help="Upload the PDF you want to add bookmarks to"
+    help="上传您要添加书签的PDF文件"
 )
 
 if uploaded_file is not None:
@@ -137,52 +137,52 @@ if uploaded_file is not None:
         # Load PDF to get page count
         doc = pdf_handler.load_pdf(tmp_path)
         total_pages = pdf_handler.get_page_count(doc)
-        st.success(f"Loaded PDF with {total_pages} pages")
+        st.success(f"已加载PDF，共 {total_pages} 页")
 
-        st.header("🎯 Step 2: Define Table of Contents Range")
+        st.header("🎯 步骤 2: 定义目录范围")
         col1, col2, col3 = st.columns(3)
         with col1:
             start_page = st.number_input(
-                "Start Page",
+                "起始页码",
                 min_value=1,
                 max_value=total_pages,
                 value=1,
-                help="First page of the Table of Contents (physical page number)"
+                help="目录的起始页码（物理页码）"
             )
         with col2:
             end_page = st.number_input(
-                "End Page",
+                "结束页码",
                 min_value=1,
                 max_value=total_pages,
                 value=min(10, total_pages),
-                help="Last page of the Table of Contents (physical page number)"
+                help="目录的结束页码（物理页码）"
             )
         with col3:
             page_offset = st.number_input(
-                "Page Offset",
+                "页码偏移量",
                 min_value=-1000,
                 max_value=1000,
                 value=0,
-                help="If ToC says 'Chapter 1 is on page 1', but that's actually page 15 of the PDF, enter 14"
+                help="如果目录显示'第一章在第1页'，但实际是PDF的第15页，则输入14"
             )
 
         # Validate range
         if start_page > end_page:
-            st.error("Start page must be less than or equal to end page")
+            st.error("起始页码必须小于或等于结束页码")
         else:
-            st.info(f"Will process pages {start_page} to {end_page} (zero‑based: {start_page-1} to {end_page-1})")
+            st.info(f"将处理第{start_page}页到第{end_page}页 (零基索引: {start_page-1}到{end_page-1})")
 
-            st.header("🚀 Step 3: Extract and Apply Bookmarks")
-            if st.button("✨ Process PDF", type="primary", use_container_width=True):
+            st.header("🚀 步骤 3: 提取并应用书签")
+            if st.button("✨ 处理PDF", type="primary", use_container_width=True):
                 if not api_key:
-                    st.error("Please enter your API key in the sidebar")
+                    st.error("请在侧边栏输入API密钥")
                 else:
                     # Initialize progress
                     progress_bar = st.progress(0)
                     status_text = st.empty()
 
                     # Initialize OpenAI client
-                    status_text.text("Initializing API client...")
+                    status_text.text("正在初始化API客户端...")
                     client = vision_handler.create_openai_client(base_url, api_key)
                     system_prompt = vision_handler.get_default_system_prompt()
 
@@ -194,20 +194,20 @@ if uploaded_file is not None:
                         zero_based_page = physical_page - 1  # PyMuPDF uses 0‑based indexing
                         progress = (i + 1) / total_pages_to_process
                         progress_bar.progress(progress)
-                        status_text.text(f"Processing page {physical_page} of {end_page}...")
+                        status_text.text(f"正在处理第{physical_page}页，共{end_page}页...")
 
                         # Render page to image
                         try:
                             image_bytes = pdf_handler.render_page_to_image(doc, zero_based_page, dpi)
                         except Exception as e:
-                            st.error(f"Failed to render page {physical_page}: {e}")
+                            st.error(f"渲染第{physical_page}页失败: {e}")
                             continue
 
                         # Encode to base64
                         image_b64 = vision_handler.encode_image_to_base64(image_bytes)
 
                         # Call vision API
-                        status_text.text(f"Extracting structure from page {physical_page}...")
+                        status_text.text(f"正在从第{physical_page}页提取结构...")
                         entries = vision_handler.extract_toc_from_image(
                             client=client,
                             model=model,
@@ -219,26 +219,26 @@ if uploaded_file is not None:
 
                         if entries:
                             all_entries.extend(entries)
-                            st.write(f"✅ Page {physical_page}: extracted {len(entries)} entries")
+                            st.write(f"✅ 第{physical_page}页: 提取了{len(entries)}个条目")
                         else:
-                            st.warning(f"⚠️ Page {physical_page}: no entries extracted")
+                            st.warning(f"⚠️ 第{physical_page}页: 未提取到条目")
 
                     # Update progress
                     progress_bar.progress(1.0)
-                    status_text.text("Processing complete!")
+                    status_text.text("处理完成！")
 
                     # Show extraction summary
                     if all_entries:
-                        st.success(f"Extracted {len(all_entries)} total entries")
+                        st.success(f"总共提取了{len(all_entries)}个条目")
 
                         # Display preview of entries
-                        with st.expander("📋 Preview Extracted Entries", expanded=True):
+                        with st.expander("📋 预览提取的条目", expanded=True):
                             st.json(all_entries[:10])  # Show first 10 entries
                             if len(all_entries) > 10:
-                                st.caption(f"Showing 10 of {len(all_entries)} entries")
+                                st.caption(f"显示前10个条目，共{len(all_entries)}个")
 
                         # Apply page offset and write TOC
-                        status_text.text("Applying bookmarks to PDF...")
+                        status_text.text("正在将书签应用到PDF...")
                         output_bytes = pdf_handler.write_toc(
                             doc=doc,
                             toc=all_entries,
@@ -247,9 +247,9 @@ if uploaded_file is not None:
                         )
 
                         # Create download button
-                        st.header("📥 Step 4: Download Enhanced PDF")
+                        st.header("📥 步骤 4: 下载增强版PDF")
                         st.download_button(
-                            label="Download PDF with Bookmarks",
+                            label="下载带书签的PDF",
                             data=output_bytes,
                             file_name=f"bookmarked_{uploaded_file.name}",
                             mime="application/pdf",
@@ -274,7 +274,7 @@ if uploaded_file is not None:
                                     time.sleep(0.1)  # Short delay before retry
                         st.balloons()
                     else:
-                        st.error("No bookmarks were extracted. Please check your PDF and API configuration.")
+                        st.error("未提取到书签。请检查您的PDF文件和API配置。")
                         # Cleanup even when no entries extracted
                         try:
                             doc.close()
@@ -293,7 +293,7 @@ if uploaded_file is not None:
                                     time.sleep(0.1)  # Short delay before retry
 
     except Exception as e:
-        st.error(f"Error processing PDF: {e}")
+        st.error(f"处理PDF时发生错误: {e}")
         logger.exception("PDF processing error")
         # Clean up resources
         try:
@@ -314,31 +314,31 @@ if uploaded_file is not None:
                     else:
                         time.sleep(0.1)  # Short delay before retry
 else:
-    st.info("👈 Please upload a PDF file to begin")
+    st.info("👈 请上传一个PDF文件开始")
 
 # Footer
 st.markdown("---")
 st.markdown("""
-### How It Works
-1. **Vision over OCR**: PDF pages are rendered as high‑quality images and sent to a multimodal LLM.
-2. **Structure Extraction**: The LLM analyzes the layout and returns a structured JSON list of titles, pages, and hierarchy levels.
-3. **Bookmark Injection**: Extracted page numbers are adjusted by the offset you provide, then written into the PDF as a nested table of contents.
+### 工作原理
+1. **视觉而非OCR**: PDF页面被渲染为高质量图像并发送给多模态LLM。
+2. **结构提取**: LLM分析布局并返回结构化的JSON列表，包含标题、页码和层级。
+3. **书签注入**: 提取的页码根据您提供的偏移量进行调整，然后作为嵌套目录写入PDF。
 
-### Supported Providers
-- **DeepSeek**: `deepseek-chat` (text‑only) or `deepseek-vl` (vision)
-- **OpenRouter**: Any vision‑capable model (GPT‑4o, Gemini Flash, Claude 3.5 Sonnet, etc.)
-- **Local OpenAI‑compatible endpoints**: LM Studio, Ollama, etc.
+### 支持的提供商
+- **DeepSeek**: `deepseek-chat` (仅文本) 或 `deepseek-vl` (视觉)
+- **OpenRouter**: 任何支持视觉的模型 (GPT‑4o, Gemini Flash, Claude 3.5 Sonnet等)
+- **本地OpenAI兼容端点**: LM Studio, Ollama等
 
-### Tips
-- For complex layouts (dual‑column, tables), use a vision‑capable model.
-- Increase DPI if the text appears blurry in the images.
-- The page offset is crucial for academic papers where the front matter (roman numerals) shifts page numbering.
+### 使用技巧
+- 对于复杂布局(双列、表格)，请使用支持视觉的模型。
+- 如果图像中的文本模糊，请提高DPI。
+- 对于学术论文，页码偏移量至关重要，因为前言(罗马数字)会影响页码编号。
 """)
 
 # Handle configuration saving (must be after all inputs are defined)
 if save_button:
     if not api_key:
-        st.sidebar.error("API Key is required to save configuration")
+        st.sidebar.error("保存配置需要API密钥")
     else:
         success = config_handler.save_config(
             base_url=base_url,
@@ -349,16 +349,16 @@ if save_button:
             temperature=temperature
         )
         if success:
-            st.sidebar.success("Configuration saved successfully!")
+            st.sidebar.success("配置保存成功！")
         else:
-            st.sidebar.error("Failed to save configuration")
+            st.sidebar.error("保存配置失败")
 
 # Show configuration status in sidebar
 st.sidebar.markdown("---")
-st.sidebar.header("📋 Configuration Status")
+st.sidebar.header("📋 配置状态")
 if config_handler.config_exists():
-    st.sidebar.success("✅ Configuration loaded")
-    st.sidebar.caption(f"Model: {model}")
-    st.sidebar.caption(f"Base URL: {base_url[:30]}..." if len(base_url) > 30 else f"Base URL: {base_url}")
+    st.sidebar.success("✅ 配置已加载")
+    st.sidebar.caption(f"模型: {model}")
+    st.sidebar.caption(f"基础地址: {base_url[:30]}..." if len(base_url) > 30 else f"基础地址: {base_url}")
 else:
-    st.sidebar.info("📝 No saved configuration")
+    st.sidebar.info("📝 无保存的配置")

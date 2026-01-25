@@ -1,222 +1,215 @@
-# PDF Auto-Bookmarker
+# PDF自动书签生成器
 
-A Python-based Streamlit application that automatically extracts Table of Contents (TOC) from PDF pages using Vision AI (multimodal LLM) and embeds bookmarks into the PDF. No traditional OCR used—leverages vision-capable models to understand complex layouts (dual-column, tables, etc.).
+一个基于Python的Streamlit应用，使用Vision AI（多模态LLM）自动从PDF页面提取目录(TOC)并嵌入书签。不使用传统OCR技术——利用支持视觉的模型理解复杂布局（双列、表格等）。
 
-## Features
+## 功能特点
 
-- **Vision over OCR**: Renders PDF pages as high‑quality images and sends them to a multimodal LLM for structure extraction
-- **Complex Layout Support**: Handles dual‑column tables of contents, tables, and other complex layouts
-- **Flexible API**: Compatible with any OpenAI‑compatible API (DeepSeek, OpenRouter, local endpoints)
-- **Page Offset Adjustment**: Corrects for front‑matter page numbering differences
-- **Streamlit UI**: User‑friendly web interface for configuration and processing
-- **Bookmark Injection**: Embeds hierarchical bookmarks directly into the PDF using PyMuPDF
+- **视觉而非OCR**：将PDF页面渲染为高质量图像并发送给多模态LLM进行结构提取
+- **复杂布局支持**：处理双列目录、表格和其他复杂布局
+- **灵活的API**：兼容任何OpenAI兼容的API（DeepSeek、OpenRouter、本地端点等）
+- **页码偏移调整**：校正前言页码与实际页码的差异
+- **Streamlit界面**：用户友好的Web界面进行配置和处理
+- **书签嵌入**：使用PyMuPDF直接将分层书签嵌入PDF
 
-## Technology Stack
+## 技术栈
 
-- **Frontend**: Streamlit
-- **PDF Processing**: PyMuPDF (fitz) for rendering pages to images and writing bookmarks
-- **Vision API**: OpenAI‑compatible client (compatible with DeepSeek, OpenRouter, GPT‑4o, Gemini, Claude, etc.)
-- **Image Processing**: Pillow (included with PyMuPDF)
+- **前端**：Streamlit
+- **PDF处理**：PyMuPDF (fitz) 用于渲染页面为图像和写入书签
+- **视觉API**：OpenAI兼容客户端（兼容DeepSeek、OpenRouter、GPT‑4o、Gemini、Claude等）
+- **图像处理**：Pillow（包含在PyMuPDF中）
 
-## Installation
+## 安装
 
-1. **Clone or download** this repository:
+1. **克隆或下载**此仓库：
    ```bash
    git clone <repository-url>
-   cd 15_auto_pdf_marker
+   cd auto_pdf_marker
    ```
 
-2. **Create a virtual environment** (recommended):
+2. **创建虚拟环境**（推荐）：
    ```bash
    python -m venv .venv
-   # On Windows:
+   # Windows系统：
    .venv\Scripts\activate
-   # On macOS/Linux:
+   # macOS/Linux系统：
    source .venv/bin/activate
    ```
 
-3. **Install dependencies**:
+3. **安装依赖**：
    ```bash
    pip install -r requirements.txt
    ```
 
-## Configuration
+## 配置
 
-### API Requirements
+### API要求
 
-You need access to a **vision‑capable** multimodal LLM through an OpenAI‑compatible API. Options include:
+您需要通过OpenAI兼容的API访问**支持视觉功能**的多模态LLM。选项包括：
 
-| Provider | Base URL | Example Models | Notes |
-|----------|----------|----------------|-------|
-| **DeepSeek** | `https://api.deepseek.com` | `deepseek-vl`, `deepseek-chat` | `deepseek-vl` supports vision |
-| **OpenRouter** | `https://openrouter.ai/api/v1` | `gpt-4o`, `gemini-flash`, `claude-3.5-sonnet` | Vision models available |
-| **Local** | `http://localhost:1234/v1` | Any local model with vision support | LM Studio, Ollama, etc. |
-| **OpenAI** | `https://api.openai.com/v1` | `gpt-4o`, `gpt-4-turbo` | Standard OpenAI API |
+| 提供商 | 基础URL | 示例模型 | 备注 |
+|--------|---------|----------|------|
+| **DeepSeek** | `https://api.deepseek.com` | `deepseek-vl`, `deepseek-chat` | `deepseek-vl`支持视觉功能 |
+| **OpenRouter** | `https://openrouter.ai/api/v1` | `gpt-4o`, `gemini-flash`, `claude-3.5-sonnet` | 提供视觉模型 |
+| **本地** | `http://localhost:1234/v1` | 任何支持视觉的本地模型 | LM Studio, Ollama等 |
+| **OpenAI** | `https://api.openai.com/v1` | `gpt-4o`, `gpt-4-turbo` | 标准OpenAI API |
 
-**You will need an API key** from your chosen provider.
+**您需要从所选提供商获取API密钥**。
 
-### Environment Setup
+### 环境设置
 
-1. **Prepare your API key** from your chosen provider.
-2. **Ensure you have sufficient credits/quota** for vision requests (image processing consumes more tokens).
+1. **准备API密钥**：从您选择的提供商获取API密钥
+2. **确保有足够的信用额度/配额**：视觉请求（图像处理）消耗更多token
 
-## Usage
+## 使用
 
-### Running the Application
+### 运行应用
 
-1. **Start the Streamlit server**:
+1. **启动Streamlit服务器**：
    ```bash
    streamlit run app.py
    ```
 
-2. **Open your browser** to the URL shown (typically `http://localhost:8501`).
+2. **在浏览器中打开**显示的URL（通常是`http://localhost:8501`）
 
-### Step‑by‑Step Workflow
+### 逐步工作流程
 
-1. **Configure API Settings** (sidebar):
-   - **Base URL**: Your API endpoint (e.g., `https://api.deepseek.com`)
-   - **API Key**: Your API key (hidden input)
-   - **Model Name**: Vision‑capable model (e.g., `deepseek-vl`, `gpt-4o`)
+1. **配置API设置**（侧边栏）：
+   - **基础地址**：您的API端点（例如`https://api.deepseek.com`）
+   - **API密钥**：您的API密钥（隐藏输入）
+   - **模型名称**：支持视觉的模型（例如`deepseek-vl`, `gpt-4o`）
 
-2. **Upload PDF**:
-   - Click "Browse files" or drag‑and‑drop your PDF
-   - The application will show the total page count
+2. **上传PDF**：
+   - 点击"选择PDF文件"或拖放PDF文件
+   - 应用将显示总页数
 
-3. **Define TOC Range**:
-   - **Start Page**: First page of the Table of Contents (physical page number)
-   - **End Page**: Last page of the Table of Contents
-   - **Page Offset**: If the ToC says "Chapter 1 is on page 1", but that's actually page 15 of the PDF, enter 14
+3. **定义目录范围**：
+   - **起始页码**：目录的起始页码（物理页码）
+   - **结束页码**：目录的结束页码
+   - **页码偏移量**：如果目录显示"第一章在第1页"，但实际是PDF的第15页，则输入14
 
-4. **Adjust Processing Settings** (sidebar, optional):
-   - **Image DPI**: Higher DPI improves text clarity but increases API payload size (300‑600 recommended)
-   - **Max Tokens**: Maximum tokens for LLM response (2000‑4000)
-   - **Temperature**: Lower values (0.1‑0.3) for more deterministic JSON output
+4. **调整处理设置**（侧边栏，可选）：
+   - **图像DPI**：更高的DPI提高文本清晰度但增加API负载大小（推荐300‑600）
+   - **最大Token数**：LLM响应的最大token数（2000‑4000）
+   - **温度**：较低的值（0.1‑0.3）产生更确定的JSON输出
 
-5. **Process PDF**:
-   - Click the "✨ Process PDF" button
-   - Watch the progress bar as each page is rendered and sent to the vision API
-   - View extracted entries in the preview panel
+5. **处理PDF**：
+   - 点击"✨ 处理PDF"按钮
+   - 观察进度条，每个页面被渲染并发送到视觉API
+   - 在预览面板中查看提取的条目
 
-6. **Download Enhanced PDF**:
-   - Click "Download PDF with Bookmarks" to save the processed file
-   - The new PDF will contain nested bookmarks matching the extracted structure
+6. **下载增强版PDF**：
+   - 点击"下载带书签的PDF"保存处理后的文件
+   - 新的PDF将包含与提取结构匹配的嵌套书签
 
-## File Structure
+## 文件结构
 
 ```
 15_auto_pdf_marker/
-├── app.py                    # Main Streamlit application
-├── requirements.txt          # Python dependencies
-├── README.md                # This file
-├── utils/                   # Core modules
+├── app.py                    # 主Streamlit应用
+├── requirements.txt          # Python依赖
+├── README.md                # 英文文档（本文件）
+├── README_CN.md             # 中文文档
+├── utils/                   # 核心模块
 │   ├── __init__.py
-│   ├── pdf_handler.py       # PDF loading, rendering, bookmark writing
-│   ├── vision_handler.py    # Image encoding, Vision API client, JSON parsing
-│   └── config_handler.py    # Configuration saving and loading
-└── test_integration.py      # Integration tests (optional)
+│   ├── pdf_handler.py       # PDF加载、渲染、书签写入
+│   ├── vision_handler.py    # 图像编码、Vision API客户端、JSON解析
+│   └── config_handler.py    # 配置保存和加载
+└── test_integration.py      # 集成测试（可选）
 ```
 
-## Configuration Persistence
+## 配置持久化
 
-The application now supports saving and loading configuration settings:
+应用现在支持保存和加载配置设置：
 
-### Features
-- **Auto-load**: Settings are automatically loaded on app startup
-- **One-click save**: Save all current settings with the "💾 Save Config" button
-- **Secure storage**: API keys are obfuscated (Base64 encoded) before saving
-- **Easy management**: Clear saved configuration with "🗑️ Clear Config" button
+### 功能
+- **自动加载**：应用启动时自动加载设置
+- **一键保存**：使用"💾 保存配置"按钮保存所有当前设置
+- **安全存储**：API密钥在保存前进行混淆处理（Base64编码）
+- **轻松管理**：使用"🗑️ 清除配置"按钮清除已保存的配置
 
-### Saved Settings
-- **API Configuration**: Base URL, API Key, Model Name
-- **Processing Settings**: Image DPI, Max Tokens, Temperature
-- **Configuration File**: Saved as `pdf_marker_config.json` in the project root
+### 保存的设置
+- **API配置**：基础地址、API密钥、模型名称
+- **处理设置**：图像DPI、最大Token数、温度
+- **配置文件**：保存为项目根目录下的`pdf_marker_config.json`
 
-### How to Use
-1. **Configure**: Fill in your API settings and processing preferences
-2. **Save**: Click "💾 Save Config" in the sidebar
-3. **Restart**: Settings will persist across app restarts
-4. **Update**: Modify settings and save again to update
+### 使用方法
+1. **配置**：填写您的API设置和处理偏好
+2. **保存**：点击侧边栏的"💾 保存配置"
+3. **重启**：设置将在应用重启后保留
+4. **更新**：修改设置并再次保存以更新
 
-### Security Notes
-- **Local storage**: Configuration is stored locally in a JSON file
-- **Basic obfuscation**: API keys are Base64 encoded (not encrypted)
-- **Recommendation**: Do not commit `pdf_marker_config.json` to version control
+### 安全说明
+- **本地存储**：配置本地存储在JSON文件中
+- **基本混淆**：API密钥进行Base64编码（非加密）
+- **建议**：不要将`pdf_marker_config.json`提交到版本控制
 
-## How It Works
+## 工作原理
 
-1. **PDF → Image Conversion**: Each selected PDF page is rendered to a high‑resolution PNG image using PyMuPDF
-2. **Vision API Call**: The image is base64‑encoded and sent to the vision‑capable LLM with a structured prompt
-3. **JSON Extraction**: The LLM returns a JSON list of `{title, page, level}` objects
-4. **Page Number Adjustment**: Extracted page numbers are adjusted by the user‑specified offset
-5. **Bookmark Injection**: The adjusted TOC is written into the PDF using PyMuPDF's `set_toc()` method
-6. **Download**: The enhanced PDF is returned to the user
+1. **PDF → 图像转换**：使用PyMuPDF将每个选定的PDF页面渲染为高分辨率PNG图像
+2. **视觉API调用**：图像进行base64编码并发送给支持视觉的LLM，附带结构化提示
+3. **JSON提取**：LLM返回`{title, page, level}`对象的JSON列表
+4. **页码调整**：提取的页码根据用户指定的偏移量进行调整
+5. **书签注入**：调整后的目录使用PyMuPDF的`set_toc()`方法写入PDF
+6. **下载**：增强版PDF返回给用户
 
-## System Prompt
+## 故障排除
 
-The application uses the following system prompt for structure extraction:
+### 常见问题
 
-```
-You are a structure extraction assistant. I will provide an image of a book's Table of Contents. It might be dual-column or complex. Output strictly a JSON list of objects: [{"title": "Section Name", "page": 123, "level": 1}]. 'page' is the page number printed in the image. 'level' is the hierarchy (1 for chapter, 2 for section). Do not output markdown, just the JSON string.
-```
+| 问题 | 解决方案 |
+|------|----------|
+| **API密钥不被接受** | 验证您的API密钥有效且具有视觉权限 |
+| **找不到模型** | 确保您使用支持视觉的模型（例如`deepseek-vl`，而不是`deepseek-chat`） |
+| **空响应** | 提高DPI以获得更清晰的图像；检查API日志中的错误 |
+| **页码不正确** | 根据PDF的前言调整页码偏移量值 |
+| **内存错误** | 降低DPI或减少同时处理的页面数量 |
+| **配置无法保存** | 检查写入权限；确保在保存前提供了API密钥 |
+| **配置无法加载** | 检查`pdf_marker_config.json`是否存在且为有效的JSON |
+| **Streamlit崩溃** | 确保所有依赖已安装；检查Python版本（3.8+） |
 
-## Troubleshooting
+### 错误消息
 
-### Common Issues
+- **"No module named 'fitz'"**：重新安装PyMuPDF：`pip install --force-reinstall pymupdf`
+- **OpenAI客户端错误**：确保使用`openai==1.50.2`（从1.51.0降级以获得兼容性）
+- **JSON解析错误**：视觉API可能未返回有效的JSON；尝试不同的模型
+- **"Could not delete temporary file"**：Windows文件锁定问题；应用将自动重试
+- **配置文件错误**：如果损坏，删除`pdf_marker_config.json`并重新配置
 
-| Issue | Solution |
-|-------|----------|
-| **API key not accepted** | Verify your API key is valid and has vision permissions |
-| **Model not found** | Ensure you're using a vision‑capable model (e.g., `deepseek-vl`, not `deepseek-chat`) |
-| **Empty response** | Increase DPI for clearer images; check API logs for errors |
-| **Incorrect page numbers** | Adjust the Page Offset value based on your PDF's front matter |
-| **Memory errors** | Reduce DPI or process fewer pages at once |
-| **Configuration not saving** | Check write permissions; ensure API key is provided before saving |
-| **Configuration not loading** | Check if `pdf_marker_config.json` exists and is valid JSON |
-| **Streamlit crashes** | Ensure all dependencies are installed; check Python version (3.8+) |
+## 性能考虑
 
-### Error Messages
+- **API成本**：视觉请求比纯文本请求消耗更多token
+- **处理时间**：每个页面需要一个API调用；处理10页≈10个请求
+- **图像大小**：更高的DPI提高图像质量但也增加负载大小和成本
+- **速率限制**：尊重您的API提供商的速率限制；如果需要，添加延迟
 
-- **"No module named 'fitz'"**: Reinstall PyMuPDF: `pip install --force-reinstall pymupdf`
-- **OpenAI client errors**: Ensure you're using `openai==1.50.2` (downgraded from 1.51.0 for compatibility)
-- **JSON parsing errors**: The vision API might not be returning valid JSON; try a different model
-- **"Could not delete temporary file"**: Windows file locking issue; the app will retry automatically
-- **Configuration file errors**: Delete `pdf_marker_config.json` and reconfigure if corrupted
+## 扩展应用
 
-## Performance Considerations
+### 添加新的API提供商
 
-- **API Costs**: Vision requests consume more tokens than text‑only requests
-- **Processing Time**: Each page requires an API call; processing 10 pages = ~10 requests
-- **Image Size**: Higher DPI increases image quality but also payload size and cost
-- **Rate Limits**: Respect your API provider's rate limits; add delays if needed
+应用使用标准的OpenAI客户端格式。要添加对其他提供商的支持：
 
-## Extending the Application
+1. 确保他们提供OpenAI兼容的端点
+2. 在"基础地址"字段中使用他们的基础URL
+3. 从他们的产品中选择支持视觉的模型
 
-### Adding New API Providers
+### 自定义提取提示
 
-The application uses the standard OpenAI client format. To add support for other providers:
+编辑`utils/vision_handler.py`中的`get_default_system_prompt()`函数以修改提取指令。
 
-1. Ensure they offer an OpenAI‑compatible endpoint
-2. Use their base URL in the "Base URL" field
-3. Select a vision‑capable model from their offerings
+### 添加后处理
 
-### Customizing the Extraction Prompt
+修改`utils/pdf_handler.py`中的`write_toc()`函数以添加自定义验证或过滤TOC条目。
 
-Edit `utils/vision_handler.py`, `get_default_system_prompt()` function to modify the extraction instructions.
+### 自定义配置存储
 
-### Adding Post‑Processing
+配置系统可以扩展或修改：
 
-Modify `utils/pdf_handler.py`, `write_toc()` function to add custom validation or filtering of TOC entries.
+1. **更改存储位置**：修改`utils/config_handler.py`中的`CONFIG_FILE`
+2. **添加新设置**：扩展`save_config()`和`load_config()`函数
+3. **增强安全性**：为API密钥实现适当的加密（不仅仅是Base64混淆）
+4. **多配置文件**：扩展以支持多个配置配置文件
 
-### Customizing Configuration Storage
-
-The configuration system can be extended or modified:
-
-1. **Change Storage Location**: Modify `CONFIG_FILE` in `utils/config_handler.py`
-2. **Add New Settings**: Extend `save_config()` and `load_config()` functions
-3. **Enhanced Security**: Implement proper encryption for API keys (not just Base64 obfuscation)
-4. **Multiple Profiles**: Extend to support multiple configuration profiles
-
-Configuration is stored in `pdf_marker_config.json` with the following structure:
+配置存储在`pdf_marker_config.json`中，结构如下：
 ```json
 {
   "base_url": "https://api.deepseek.com",
@@ -229,25 +222,25 @@ Configuration is stored in `pdf_marker_config.json` with the following structure
 }
 ```
 
-## Limitations
+## 限制
 
-- **API Dependency**: Requires internet connection and valid API credentials
-- **Cost**: Vision API calls are more expensive than text‑only requests
-- **Accuracy**: Depends on the vision model's ability to parse complex layouts
-- **Page Range**: Large page ranges will result in many API calls
+- **API依赖**：需要互联网连接和有效的API凭据
+- **成本**：视觉API调用比纯文本请求更昂贵
+- **准确性**：取决于视觉模型解析复杂布局的能力
+- **页面范围**：大页面范围将导致许多API调用
 
-## License
+## 许可证
 
-This project is provided as-is for educational and personal use. Please respect the terms of service of your chosen API provider.
+本项目按原样提供，用于教育和个人使用。请尊重您选择的API提供商的服务条款。
 
-## Support
+## 支持
 
-For issues or questions:
-1. Check the Troubleshooting section above
-2. Verify your API configuration
-3. Ensure you're using a vision‑capable model
-4. Test with a simple PDF first
+如有问题或疑问：
+1. 查看上面的故障排除部分
+2. 验证您的API配置
+3. 确保您使用支持视觉的模型
+4. 首先使用简单的PDF进行测试
 
 ---
 
-**Note**: This tool is for authorized use only. Always ensure you have the right to modify the PDFs you process.
+**注意**：此工具仅供授权使用。请确保您有权修改您处理的PDF。
